@@ -268,6 +268,36 @@ func GetS3BucketVersioning(t testing.TestingT, awsRegion string, bucket string) 
 	return versioningStatus
 }
 
+// GetS3BucketLoggingTarget fetches the given bucket's logging configuration status and returns it as a string
+func GetS3BucketLoggingTarget(t testing.TestingT, awsRegion string, bucket string) string {
+	loggingTarget, err := GetS3BucketLoggingTargetE(t, awsRegion, bucket)
+	require.NoError(t, err)
+
+	return loggingTarget
+}
+
+// GetS3BucketLoggingE fetches the given bucket's versioning configuration status and returns it as a string
+func GetS3BucketLoggingTargetE(t testing.TestingT, awsRegion string, bucket string) (string, error) {
+	s3Client, err := NewS3ClientE(t, awsRegion)
+	if err != nil {
+		return "", err
+	}
+
+
+	res, err := s3Client.GetBucketLogging(&s3.GetBucketLoggingInput{
+		Bucket: &bucket,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if res.LoggingEnabled != nil {
+		return aws.StringValue(res.LoggingEnabled.TargetBucket), nil
+	}
+
+	return "", err
+}
+
 // GetS3BucketVersioningE fetches the given bucket's versioning configuration status and returns it as a string
 func GetS3BucketVersioningE(t testing.TestingT, awsRegion string, bucket string) (string, error) {
 	s3Client, err := NewS3ClientE(t, awsRegion)
