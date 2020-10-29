@@ -283,7 +283,6 @@ func GetS3BucketLoggingTargetE(t testing.TestingT, awsRegion string, bucket stri
 		return "", err
 	}
 
-
 	res, err := s3Client.GetBucketLogging(&s3.GetBucketLoggingInput{
 		Bucket: &bucket,
 	})
