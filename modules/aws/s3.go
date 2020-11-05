@@ -294,28 +294,12 @@ func PutS3BucketLoggingE(t testing.TestingT, region string, sourceBucketName str
 		return err
 	}
 
-	//enable logging on the origin S3 bucket, and allow write & read_acp permissions on it for the log delivery group
+	//enable logging on the origin S3 bucket
 	params := &s3.PutBucketLoggingInput{
 		Bucket: aws.String(sourceBucketName),
 		BucketLoggingStatus: &s3.BucketLoggingStatus{
 			LoggingEnabled: &s3.LoggingEnabled{
 				TargetBucket: aws.String(logsTargetBucketName),
-				TargetGrants: []*s3.TargetGrant{
-					{
-						Grantee: &s3.Grantee{
-							Type: aws.String("Group"),
-							URI:  aws.String(logDeliveryUri),
-						},
-						Permission: aws.String("READ_ACP"),
-					},
-					{
-						Grantee: &s3.Grantee{
-							Type: aws.String("Group"),
-							URI:  aws.String(logDeliveryUri),
-						},
-						Permission: aws.String("WRITE"),
-					},
-				},
 				TargetPrefix: aws.String("/"),
 			},
 		},
