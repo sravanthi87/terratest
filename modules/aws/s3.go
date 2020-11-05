@@ -260,12 +260,52 @@ func EmptyS3BucketE(t testing.TestingT, region string, name string) error {
 	return err
 }
 
-// GetS3BucketVersioning fetches the given bucket's versioning configuration status and returns it as a string
-func GetS3BucketVersioning(t testing.TestingT, awsRegion string, bucket string) string {
-	versioningStatus, err := GetS3BucketVersioningE(t, awsRegion, bucket)
+// PutS3BucketLogging enables logging for the given S3 bucket in the given region
+// Make sure that the logsTargetBucket exists prior to using it here.
+func PutS3BucketLogging(t testing.TestingT, region string, bucketName string, logsTargetBucketName string) {
+	err := PutS3BucketLoggingE(t, region, bucketName, logsTargetBucketName)
 	require.NoError(t, err)
+}
 
-	return versioningStatus
+// PutS3BucketLoggingE enables logging for the given S3 bucket in the given region
+// Make sure that the logsTargetBucket exists prior to using it here.
+func PutS3BucketLoggingE(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) error {
+	logger.Logf(t, "Applying logging to S3 bucket %s in %s", sourceBucketName, region)
+	logger.Logf(t, "Setting TargetBucket to be %s", logsTargetBucketName)
+
+	s3Client, err := NewS3ClientE(t, region)
+	if err != nil {
+		return err
+	}
+
+	params := &s3.PutBucketLoggingInput{
+		Bucket: aws.String(sourceBucketName),
+		BucketLoggingStatus: &s3.BucketLoggingStatus{
+			LoggingEnabled: &s3.LoggingEnabled{
+				TargetBucket: aws.String(logsTargetBucketName),
+				TargetGrants: []*s3.TargetGrant{
+					{
+						Grantee: &s3.Grantee{
+							Type: aws.String("Group"),
+							URI:  aws.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
+						},
+						Permission: aws.String("READ_ACP"),
+					},
+					{
+						Grantee: &s3.Grantee{
+							Type: aws.String("Group"),
+							URI:  aws.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
+						},
+						Permission: aws.String("WRITE"),
+					},
+				},
+				TargetPrefix: aws.String("/"),
+			},
+		},
+	}
+
+	_, err = s3Client.PutBucketLogging(params)
+	return err
 }
 
 // GetS3BucketLoggingTarget fetches the given bucket's logging configuration status and returns it as a string
@@ -295,6 +335,14 @@ func GetS3BucketLoggingTargetE(t testing.TestingT, awsRegion string, bucket stri
 	}
 
 	return "", err
+}
+
+// GetS3BucketVersioning fetches the given bucket's versioning configuration status and returns it as a string
+func GetS3BucketVersioning(t testing.TestingT, awsRegion string, bucket string) string {
+	versioningStatus, err := GetS3BucketVersioningE(t, awsRegion, bucket)
+	require.NoError(t, err)
+
+	return versioningStatus
 }
 
 // GetS3BucketVersioningE fetches the given bucket's versioning configuration status and returns it as a string
@@ -395,6 +443,29 @@ func AssertS3BucketPolicyExistsE(t testing.TestingT, region string, bucketName s
 		return NewNoBucketPolicyError(bucketName, region, policy)
 	}
 	return nil
+}
+
+// AssertTargetLoggingBucketIsReturned checks if the given S3 bucket has logging enabled and a target bucket set.
+func AssertTargetLoggingBucketIsReturned(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) {
+	err := AssertTargetLoggingBucketIsReturnedE(t, region, sourceBucketName, logsTargetBucketName)
+	require.NoError(t, err)
+}
+
+// AssertTargetLoggingBucketIsReturned checks if the given S3 bucket has logging enabled and a target bucket set; returns error if not.
+func AssertTargetLoggingBucketIsReturnedE(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) error {
+	targetBucket, err := GetS3BucketLoggingTargetE(t, region, sourceBucketName)
+	if err != nil {
+		return err
+	}
+
+	if targetBucket == "" {
+		return err
+	}
+
+	if targetBucket == logsTargetBucketName {
+		return nil
+	}
+	return err
 }
 
 // NewS3Client creates an S3 client.
