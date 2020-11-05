@@ -2,6 +2,7 @@ package aws
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +12,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
+
+const logDeliveryUri = "http://acs.amazonaws.com/groups/s3/LogDelivery"
 
 // FindS3BucketWithTag finds the name of the S3 bucket in the given region with the given tag key=value.
 func FindS3BucketWithTag(t testing.TestingT, awsRegion string, key string, value string) string {
@@ -278,6 +281,20 @@ func PutS3BucketLoggingE(t testing.TestingT, region string, sourceBucketName str
 		return err
 	}
 
+	logsUri := fmt.Sprintf("uri=%s", logDeliveryUri)
+
+	//Put ACL permissions on the targetBucket, as it's different from the origin S3 bucket
+	aclInput := s3.PutBucketAclInput{
+		Bucket:       aws.String(logsTargetBucketName),
+		GrantWrite:   aws.String(logsUri),
+		GrantReadACP: aws.String(logsUri),
+	}
+
+	if _, err := s3Client.PutBucketAcl(&aclInput); err != nil {
+		return err
+	}
+
+	//enable logging on the origin S3 bucket, and allow write & read_acp permissions on it for the log delivery group
 	params := &s3.PutBucketLoggingInput{
 		Bucket: aws.String(sourceBucketName),
 		BucketLoggingStatus: &s3.BucketLoggingStatus{
@@ -287,14 +304,14 @@ func PutS3BucketLoggingE(t testing.TestingT, region string, sourceBucketName str
 					{
 						Grantee: &s3.Grantee{
 							Type: aws.String("Group"),
-							URI:  aws.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
+							URI:  aws.String(logDeliveryUri),
 						},
 						Permission: aws.String("READ_ACP"),
 					},
 					{
 						Grantee: &s3.Grantee{
 							Type: aws.String("Group"),
-							URI:  aws.String("http://acs.amazonaws.com/groups/s3/LogDelivery"),
+							URI:  aws.String(logDeliveryUri),
 						},
 						Permission: aws.String("WRITE"),
 					},
