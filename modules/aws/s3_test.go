@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -44,7 +46,8 @@ func TestGetTargetLoggingBucketForS3Bucket(t *testing.T) {
 	PutS3BucketLogging(t, region, s3BucketName, s3LogsBucketName)
 	defer DeleteS3Bucket(t, region, s3BucketName)
 
-	AssertTargetLoggingBucketIsReturned(t, region, s3BucketName, s3LogsBucketName)
+	targetBucketName := GetS3BucketLoggingTarget(t, region, s3BucketName)
+	assert.Equal(t, targetBucketName, s3LogsBucketName)
 }
 
 func TestAssertS3BucketExistsNoFalseNegative(t *testing.T) {

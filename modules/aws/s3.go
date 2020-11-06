@@ -446,29 +446,6 @@ func AssertS3BucketPolicyExistsE(t testing.TestingT, region string, bucketName s
 	return nil
 }
 
-// AssertTargetLoggingBucketIsReturned checks if the given S3 bucket has logging enabled and a target bucket set.
-func AssertTargetLoggingBucketIsReturned(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) {
-	err := AssertTargetLoggingBucketIsReturnedE(t, region, sourceBucketName, logsTargetBucketName)
-	require.NoError(t, err)
-}
-
-// AssertTargetLoggingBucketIsReturned checks if the given S3 bucket has logging enabled and a target bucket set; returns error if not.
-func AssertTargetLoggingBucketIsReturnedE(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) error {
-	targetBucket, err := GetS3BucketLoggingTargetE(t, region, sourceBucketName)
-	if err != nil {
-		return err
-	}
-
-	if targetBucket == "" {
-		return err
-	}
-
-	if targetBucket == logsTargetBucketName {
-		return nil
-	}
-	return err
-}
-
 // NewS3Client creates an S3 client.
 func NewS3Client(t testing.TestingT, region string) *s3.S3 {
 	client, err := NewS3ClientE(t, region)
