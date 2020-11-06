@@ -2,7 +2,6 @@ package aws
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -260,52 +259,6 @@ func EmptyS3BucketE(t testing.TestingT, region string, name string) error {
 		}
 	}
 	logger.Logf(t, "Bucket %s is now empty", name)
-	return err
-}
-
-// PutS3BucketLogging enables logging for the given S3 bucket in the given region
-// Make sure that the logsTargetBucket exists prior to using it here.
-func PutS3BucketLogging(t testing.TestingT, region string, bucketName string, logsTargetBucketName string) {
-	err := PutS3BucketLoggingE(t, region, bucketName, logsTargetBucketName)
-	require.NoError(t, err)
-}
-
-// PutS3BucketLoggingE enables logging for the given S3 bucket in the given region
-// Make sure that the logsTargetBucket exists prior to using it here.
-func PutS3BucketLoggingE(t testing.TestingT, region string, sourceBucketName string, logsTargetBucketName string) error {
-	logger.Logf(t, "Applying logging to S3 bucket %s in %s", sourceBucketName, region)
-	logger.Logf(t, "Setting TargetBucket to be %s", logsTargetBucketName)
-
-	s3Client, err := NewS3ClientE(t, region)
-	if err != nil {
-		return err
-	}
-
-	logsUri := fmt.Sprintf("uri=%s", logDeliveryUri)
-
-	//Put ACL permissions on the targetBucket, as it's different from the origin S3 bucket
-	aclInput := s3.PutBucketAclInput{
-		Bucket:       aws.String(logsTargetBucketName),
-		GrantWrite:   aws.String(logsUri),
-		GrantReadACP: aws.String(logsUri),
-	}
-
-	if _, err := s3Client.PutBucketAcl(&aclInput); err != nil {
-		return err
-	}
-
-	//enable logging on the origin S3 bucket
-	params := &s3.PutBucketLoggingInput{
-		Bucket: aws.String(sourceBucketName),
-		BucketLoggingStatus: &s3.BucketLoggingStatus{
-			LoggingEnabled: &s3.LoggingEnabled{
-				TargetBucket: aws.String(logsTargetBucketName),
-				TargetPrefix: aws.String("/"),
-			},
-		},
-	}
-
-	_, err = s3Client.PutBucketLogging(params)
 	return err
 }
 

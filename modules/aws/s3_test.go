@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -29,25 +27,6 @@ func TestCreateAndDestroyS3Bucket(t *testing.T) {
 
 	CreateS3Bucket(t, region, s3BucketName)
 	DeleteS3Bucket(t, region, s3BucketName)
-}
-
-func TestGetTargetLoggingBucketForS3Bucket(t *testing.T) {
-	t.Parallel()
-
-	region := GetRandomStableRegion(t, nil, nil)
-	id := random.UniqueId()
-	logger.Logf(t, "Random values selected. Region = %s, Id = %s\n", region, id)
-
-	s3BucketName := "gruntwork-terratest-" + strings.ToLower(id)
-	s3LogsBucketName := s3BucketName + "-logs"
-
-	CreateS3Bucket(t, region, s3BucketName)
-	CreateS3Bucket(t, region, s3LogsBucketName)
-	PutS3BucketLogging(t, region, s3BucketName, s3LogsBucketName)
-	defer DeleteS3Bucket(t, region, s3BucketName)
-
-	targetBucketName := GetS3BucketLoggingTarget(t, region, s3BucketName)
-	assert.Equal(t, targetBucketName, s3LogsBucketName)
 }
 
 func TestAssertS3BucketExistsNoFalseNegative(t *testing.T) {
