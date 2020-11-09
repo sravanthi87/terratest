@@ -12,8 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const logDeliveryUri = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-
 // FindS3BucketWithTag finds the name of the S3 bucket in the given region with the given tag key=value.
 func FindS3BucketWithTag(t testing.TestingT, awsRegion string, key string, value string) string {
 	bucket, err := FindS3BucketWithTagE(t, awsRegion, key, value)
