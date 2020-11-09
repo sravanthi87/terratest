@@ -1,15 +1,15 @@
 # Terraform AWS S3 Example
 
 This folder contains a simple Terraform module that deploys resources in [AWS](https://aws.amazon.com/) to demonstrate
-how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [S3
-Bucket](https://aws.amazon.com/s3/) and gives that Bucket a `Name` & `Environment` tag with the value specified in the
-`tag_bucket_name` and `tag_bucket_environment` variables, respectively.  This module also contains a terraform variable 
-that will create a basic bucket policy that will restrict the bucket to only accept SSL connections.
-
+how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys 2 [S3
+Buckets](https://aws.amazon.com/s3/) and gives those buckets a `Name` & `Environment` tags with the value specified in the 
+`tag_bucket_name` and `tag_bucket_environment` variables, respectively. It creates 2 S3 buckets - one with enabled logging 
+and another one - to serve as a TargetBucket logging location for the first one.
+ 
 Check out [test/terraform_aws_s3_logging_enabled_example_test.go](/test/terraform_aws_s3_logging_enabled_example_test.go) to see how you can write
 automated tests for this module.
 
-Note that the S3 Bucket in this module will not contain any actual objects/files after creation; it will only contain a 
+Note that the S3 Bucket in this module will not contain any actual objects/files after creation; it will only contain server access 
 logging configuration, as well as tags. For slightly more complicated, real-world examples of Terraform modules (with 
 other AWS services), see [terraform-http-example](/examples/terraform-http-example) and 
 [terraform-ssh-example](/examples/terraform-ssh-example).
