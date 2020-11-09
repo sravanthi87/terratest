@@ -9,4 +9,3 @@ output "logging_target_bucket" {
 output "bucket_arn" {
   value = aws_s3_bucket.test-origin-bucket.arn
 }
-
