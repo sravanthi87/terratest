@@ -16,17 +16,27 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "test-logs-bucket" {
-  bucket = "origin-bucket-example-logs-target"
+  bucket = "${local.aws_account_id}-${var.tag_bucket_name}-logs"
   acl    = "log-delivery-write"
+
+  tags = {
+    Name        = "${local.aws_account_id}-${var.tag_bucket_name}-logs"
+    Environment = var.tag_bucket_environment
+  }
 }
 
 resource "aws_s3_bucket" "test-origin-bucket" {
-  bucket = "origin-bucket-example"
+  bucket = "${local.aws_account_id}-${var.tag_bucket_name}"
   acl    = "private"
 
   logging {
     target_bucket = aws_s3_bucket.test-logs-bucket.id
     target_prefix = "/"
+  }
+
+  tags = {
+    Name        = var.tag_bucket_name
+    Environment = var.tag_bucket_environment
   }
 }
 

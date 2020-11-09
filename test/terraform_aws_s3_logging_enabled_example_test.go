@@ -17,7 +17,7 @@ func TestTerraformAwsS3LoggingEnabledExample(t *testing.T) {
 
 	// Give this S3 Bucket a unique ID for a name tag so we can distinguish it from any other Buckets provisioned
 	// in your AWS account
-	expectedName := fmt.Sprintf("terratest-aws-s3-logging-enabled-example-%s", strings.ToLower(random.UniqueId()))
+	expectedName := fmt.Sprintf("terratest-aws-s3-logging-example-%s", strings.ToLower(random.UniqueId()))
 
 	// Give this S3 Bucket an environment to operate as a part of for the purposes of resource tagging
 	expectedEnvironment := "Automated Testing"
@@ -54,6 +54,6 @@ func TestTerraformAwsS3LoggingEnabledExample(t *testing.T) {
 
 	// Verify that our bucket has server access logging TargetBucket set to what's expected
 	loggingTargetBucket := aws.GetS3BucketLoggingTarget(t, awsRegion, bucketID)
-	expectedLogsTargetBucket := fmt.Sprintf("%s-logs-target", bucketID)
+	expectedLogsTargetBucket := fmt.Sprintf("%s-logs", bucketID)
 	assert.Equal(t, expectedLogsTargetBucket, loggingTargetBucket)
 }
