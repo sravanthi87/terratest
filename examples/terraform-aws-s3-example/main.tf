@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "s3_bucket_policy" {
   }
 }
 
-resource "aws_s3_bucket" "test-bucket-logs" {
+resource "aws_s3_bucket" "test_bucket_logs" {
   bucket = "${local.aws_account_id}-${var.tag_bucket_name}-logs"
   acl    = "log-delivery-write"
 
@@ -61,6 +61,8 @@ resource "aws_s3_bucket" "test-bucket-logs" {
     Name        = "${local.aws_account_id}-${var.tag_bucket_name}-logs"
     Environment = var.tag_bucket_environment
   }
+
+  force_destroy = true
 }
 
 resource "aws_s3_bucket" "test_bucket" {
@@ -72,7 +74,7 @@ resource "aws_s3_bucket" "test_bucket" {
   }
 
   logging {
-    target_bucket = aws_s3_bucket.test-bucket-logs.id
+    target_bucket = aws_s3_bucket.test_bucket_logs.id
     target_prefix = "/"
   }
 
